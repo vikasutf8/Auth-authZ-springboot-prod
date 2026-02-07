@@ -3,20 +3,5 @@ spring:
     name: AuthService
   profiles:
     active: dev
-
-
 server:
-  port:9080
-
-
-# conifiguration database
-
-
-# Email config
-
-
-# Oauth2 config
-
-
-# Keyclock
-
+  port: 9080

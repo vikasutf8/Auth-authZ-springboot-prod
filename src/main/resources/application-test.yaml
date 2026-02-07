@@ -1,6 +1,19 @@
 spring:
-  application:
-    name: AuthService
+  datasource:
+    url: jdbc:postgresql://localhost:5432/authdb   # PostgreSQL DB URL
+    username: postgres                             # DB username
+    password: postgres                             # DB password
+    driver-class-name: org.postgresql.Driver
+
+    jpa:
+      database-platform: org.hibernate.dialect.PostgreSQLDialect
+      hibernate:
+        ddl-auto: validate               # ❗ DO NOT use update/create in prod
+      show-sql: false                    # Disable SQL logs in prod
+
+    sql:
+      init:
+        mode: never                      # Prevent accidental schema init
 
 
 server:

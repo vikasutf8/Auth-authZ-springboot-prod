@@ -1,13 +1,35 @@
-spring:
-  application:
-    name: AuthService
-
-
 server:
-  port:9081
+  port: 9081
 
 
+spring:
 # conifiguration database
+  datasource:
+    url: jdbc:h2:mem:authdb           # In-memory DB (data lost on restart)
+    driver-class-name: org.h2.Driver
+    username: admin                     # Default H2 username
+    password: admin              # Default H2 password (empty)
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update                # Auto create/update tables
+    show-sql: true                    # Show SQL in logs (DEV only)
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+  h2:
+    console:
+      enabled: true                   # Enables H2 web console
+      path: /h2-console               # Access at http://localhost:9081/h2-console
+    settings:
+      web-allow-others: false
+logging:
+  level:
+    org.hibernate.SQL: DEBUG           # Logs SQL queries
+    org.hibernate.type.descriptor.sql: TRACE  # Logs query parameters
+    org.springframework.boot.context.config: DEBUG
+
 
 
 # Email config
@@ -17,4 +39,8 @@ server:
 
 
 # Keyclock
+
+
+
+
 
