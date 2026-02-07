@@ -21,12 +21,11 @@ public class UserController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @ResponseBody
-    public ResponseEntity<UserResponseDto> createUser(@Valid UserRequestDto userRequestDto){
+    public ResponseEntity<UserResponseDto> createUser(@Valid @RequestBody UserRequestDto userRequestDto){
         return userService.createUser(userRequestDto);
     }
 
-    @GetMapping("all")
+    @GetMapping("/all")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public ResponseEntity<List<UserResponseDto>> getAllUsers(){

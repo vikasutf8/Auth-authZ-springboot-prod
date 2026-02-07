@@ -43,16 +43,16 @@ public class userServiceImple implements UserService {
         User user = modelMapper.map(userRequestDto, User.class);
 
         // handle roles safely
-        Set<Role> roles = userRequestDto.getRoles().stream()
-                .map(roleDto ->
-                        roleRepository.findById(roleDto.getId())
-                                .orElseThrow(() ->
-                                        new RuntimeException("Role not found: " + roleDto.getId())
-                                )
-                )
-                .collect(Collectors.toSet());
+//        Set<Role> roles = userRequestDto.getRoles().stream()
+//                .map(roleDto ->
+//                        roleRepository.findById(roleDto.getId())
+//                                .orElseThrow(() ->
+//                                        new RuntimeException("Role not found: " + roleDto.getId())
+//                                )
+//                )
+//                .collect(Collectors.toSet());
 
-        user.setRoles(roles); //explicit handle
+        user.setRoles(null); //explicit handle
 
         User savedUser = userRepository.save(user);
 
