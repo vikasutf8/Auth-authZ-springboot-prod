@@ -16,7 +16,7 @@ spring:
     show-sql: true                    # Show SQL in logs (DEV only)
     properties:
       hibernate:
-        format_sql: true
+        format_sql: true  # frmate sql querys
     open-in-view: false
   h2:
     console:
