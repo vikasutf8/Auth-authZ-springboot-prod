@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: AuthService
+
+
+server:
+  port:9081
+
+
+# conifiguration database
+
+
+# Email config
+
+
+# Oauth2 config
+
+
+# Keyclock
+
