@@ -14,6 +14,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
@@ -28,10 +29,16 @@ public class userServiceImple implements UserService {
     private final ModelMapper modelMapper;
     private final RoleRepository roleRepository;
     @Override
+    @Transactional
     public ResponseEntity<UserResponseDto> createUser(UserRequestDto userRequestDto) {
 
+        if(userRequestDto.getEmail() ==null || userRequestDto.getEmail().isBlank()){
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .build();
+        }
         // check already exist
-        log.info("Checking user is exist or not"+userRepository);
+        log.info("Checking user is exist or not");
         if (userRepository.existsByEmail(userRequestDto.getEmail())) {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
@@ -56,8 +63,8 @@ public class userServiceImple implements UserService {
 
         User savedUser = userRepository.save(user);
 
-        UserResponseDto responseDto =
-                modelMapper.map(savedUser, UserResponseDto.class);
+        UserResponseDto responseDto = modelMapper.map(savedUser, UserResponseDto.class);
+
         log.info("User created successfully check to db");
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -79,6 +86,14 @@ public class userServiceImple implements UserService {
         return ResponseEntity.ok(response);
     }
 
+    @Override
+    public ResponseEntity<UserResponseDto> getUserByEmail(String email) {
+
+        User user= userRepository.findByEmail(email).orElseThrow(()-> new IllegalArgumentException("User not found"));
+
+        UserResponseDto userResponseDto =modelMapper.map(user,UserResponseDto.class);
+        return  ResponseEntity.ok(userResponseDto);
+    }
     //        User user = User.builder()
 //                .email(userRequestDto.getEmail())
 //                .name(userRequestDto.getName())

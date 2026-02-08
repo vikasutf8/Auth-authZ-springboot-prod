@@ -14,6 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("api/v3/user")
 @RequiredArgsConstructor
+
 public class UserController {
 
     private final UserService userService;
@@ -28,12 +29,19 @@ public class UserController {
     @GetMapping("/all")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public ResponseEntity<List<UserResponseDto>> getAllUsers(){
+    public ResponseEntity<List<UserResponseDto>> getAllUsers() {
         return userService.getAllUsers();
-
+    }
         /*
         👉 REST API → Use List
 👉 Batch / Streaming → Use Iterable
          */
-    }
+
+        @GetMapping("/email/{email}")
+        @ResponseStatus(HttpStatus.OK)
+        @ResponseBody
+        public ResponseEntity<UserResponseDto> getUser(@PathVariable String email){
+            return userService.getUserByEmail(email);
+        }
+
 }
