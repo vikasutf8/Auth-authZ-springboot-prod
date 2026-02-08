@@ -7,9 +7,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Configuration;
+import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -29,8 +30,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
@@ -42,9 +43,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(7); //extract token
-
+log.info("do filter working here");
         try {
             // 2️⃣ Validate & parse token
+            log.info("works on token");
             Claims claims = jwtService.validateAccessToken(token);
 
             //TODO: IN Prodcution : isEnable check also --adding in Token OR DB calls
@@ -77,7 +79,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Invalid token → clear context (DO NOT crash app)
             SecurityContextHolder.clearContext();
         }
-
+        log.info("do filter working done ...move to next filter");
         // 6️⃣ Continue filter chain
         filterChain.doFilter(request, response);
     }
