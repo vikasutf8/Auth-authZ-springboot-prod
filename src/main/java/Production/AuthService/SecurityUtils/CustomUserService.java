@@ -3,10 +3,8 @@ package Production.AuthService.SecurityUtils;
 import Production.AuthService.entities.User;
 import Production.AuthService.exceptions.ResourceNotFoundException;
 import Production.AuthService.repositories.UserRepository;
-import Production.AuthService.services.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -30,7 +28,7 @@ public class CustomUserService implements UserDetailsService {
 
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(@NonNull String username) throws UsernameNotFoundException {
         /*
         this load user from db
          */
