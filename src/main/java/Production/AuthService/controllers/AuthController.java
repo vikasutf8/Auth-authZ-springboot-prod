@@ -70,7 +70,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<UserResponseDto> registerUser(@RequestBody UserRequestDto userRequestDto){
-//        return ResponseEntity.status(HttpStatus.ACCEPTED).body(authService.registerUser(userRequestDto));
-        return null;
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(authService.registerUser(userRequestDto));
+//        return null;
     }
 }

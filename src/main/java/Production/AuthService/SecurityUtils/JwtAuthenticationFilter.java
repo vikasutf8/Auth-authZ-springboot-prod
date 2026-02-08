@@ -27,6 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
 
+
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -82,6 +83,11 @@ log.info("do filter working here");
         log.info("do filter working done ...move to next filter");
         // 6️⃣ Continue filter chain
         filterChain.doFilter(request, response);
+    }
+
+
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        return request.getRequestURI().startsWith("/h2-console/");
     }
 }
 

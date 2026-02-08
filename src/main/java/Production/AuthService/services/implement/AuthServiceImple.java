@@ -19,6 +19,6 @@ public class AuthServiceImple implements AuthService {
     public UserResponseDto registerUser(UserRequestDto userRequestDto) {
 
         userRequestDto.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
-        return null;
+        return userService.createUser(userRequestDto);
     }
 }
