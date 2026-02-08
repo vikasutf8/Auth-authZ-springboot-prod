@@ -29,6 +29,8 @@ logging:
     org.hibernate.SQL: DEBUG           # Logs SQL queries
     org.hibernate.type.descriptor.sql: TRACE  # Logs query parameters
     org.springframework.boot.context.config: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
 
 
 
