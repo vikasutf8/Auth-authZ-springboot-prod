@@ -6,8 +6,10 @@ import Production.AuthService.dtos.LoginRequestDto;
 import Production.AuthService.dtos.TokenResponseDto;
 import Production.AuthService.dtos.UserRequestDto;
 import Production.AuthService.dtos.UserResponseDto;
+import Production.AuthService.entities.RefreshToken;
 import Production.AuthService.entities.User;
 import Production.AuthService.exceptions.InvalidResourceFoundException;
+import Production.AuthService.repositories.RefreshTokenRepository;
 import Production.AuthService.repositories.UserRepository;
 import Production.AuthService.services.AuthService;
 import jakarta.validation.Valid;
@@ -27,12 +29,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Instant;
+import java.util.UUID;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v3/auth")
 public class AuthController {
-
+    private final RefreshTokenRepository refreshTokenRepository;
     private  final AuthService authService;
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
@@ -43,7 +48,7 @@ public class AuthController {
     public ResponseEntity<TokenResponseDto> loginUser(@Valid @RequestBody LoginRequestDto loginRequestDto){
 
         log.info(loginRequestDto.username(),loginRequestDto.password());
-//authenticate
+        //authenticate
         Authentication authentication =authenticate(loginRequestDto);
         User user = userRepository.findByEmail(loginRequestDto.username()).
                 orElseThrow(()-> new InvalidResourceFoundException("Invalid password and Email !!"));
@@ -52,11 +57,24 @@ public class AuthController {
             throw new DisabledException("DeActive User, Please connect admin");
         }
 
+        // gerneate refresh token
+        String jti = UUID.randomUUID().toString();
+        RefreshToken refreshTokendb = RefreshToken.builder()
+                .jti(jti)
+                .user(user)
+                .createAt(Instant.now())
+                .expiresAt(Instant.now().plusSeconds(jwtService.getRefreshTTL()))
+                .revoked(false)
+                .build();
+        refreshTokenRepository.save(refreshTokendb);
+
+
         //generate token
         String accessToken = jwtService.generateAccessToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user,refreshTokendb.getJti()); //its db val
 
         TokenResponseDto tokenResponseDto =TokenResponseDto.
-                bearer(accessToken,"", jwtService.getAccessTTL(),"Bearer",modelMapper.map(user,UserResponseDto.class));
+                bearer(accessToken,refreshToken, jwtService.getAccessTTL(),"Bearer",modelMapper.map(user,UserResponseDto.class));
 
         return  ResponseEntity.ok(tokenResponseDto);
     }
