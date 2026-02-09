@@ -7,6 +7,7 @@ import Production.AuthService.dtos.TokenResponseDto;
 import Production.AuthService.dtos.UserRequestDto;
 import Production.AuthService.dtos.UserResponseDto;
 import Production.AuthService.entities.User;
+import Production.AuthService.exceptions.InvalidResourceFoundException;
 import Production.AuthService.repositories.UserRepository;
 import Production.AuthService.services.AuthService;
 import jakarta.validation.Valid;
@@ -44,7 +45,8 @@ public class AuthController {
         log.info(loginRequestDto.username(),loginRequestDto.password());
 //authenticate
         Authentication authentication =authenticate(loginRequestDto);
-        User user = userRepository.findByEmail(loginRequestDto.username()).orElseThrow(()-> new BadCredentialsException("Usernaem or Password are Invalid"));
+        User user = userRepository.findByEmail(loginRequestDto.username()).
+                orElseThrow(()-> new InvalidResourceFoundException("Invalid password and Email !!"));
         //check taht user enable --twice check
         if(!user.isEnable()){
             throw new DisabledException("DeActive User, Please connect admin");
@@ -61,10 +63,12 @@ public class AuthController {
 
     private Authentication authenticate(@Valid LoginRequestDto loginRequestDto) {
         try{
-            return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequestDto.username(),loginRequestDto.password()));
+            return authenticationManager
+                    .authenticate(new UsernamePasswordAuthenticationToken(
+                            loginRequestDto.username(),loginRequestDto.password()));
 
         } catch (Exception e) {
-            throw new RuntimeException("Usernaem or Password are Invalid");
+            throw new InvalidResourceFoundException("Invalid password and Email !!");
         }
     }
 

@@ -88,6 +88,7 @@ log.info("do filter working here");
 
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         return request.getRequestURI().startsWith("/h2-console/");
+        // also add auth
     }
 }
 

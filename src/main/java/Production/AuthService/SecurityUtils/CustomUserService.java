@@ -1,6 +1,5 @@
 package Production.AuthService.SecurityUtils;
 
-import Production.AuthService.entities.User;
 import Production.AuthService.exceptions.ResourceNotFoundException;
 import Production.AuthService.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +31,6 @@ public class CustomUserService implements UserDetailsService {
         /*
         this load user from db
          */
-        User user =userRepository.findByEmail(username).orElseThrow(()->new ResourceNotFoundException("Invalid Password and Email"));
-        return  user;
+        return userRepository.findByEmail(username).orElseThrow(()->new ResourceNotFoundException("Invalid Password and Email"));
     }
 }

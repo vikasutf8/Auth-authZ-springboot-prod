@@ -3,6 +3,7 @@ package Production.AuthService.SecurityUtils;
 
 import Production.AuthService.entities.Role;
 import Production.AuthService.entities.User;
+import Production.AuthService.exceptions.InvalidResourceFoundException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -118,7 +119,7 @@ public class JwtService {
                     .parseSignedClaims(token)
                     .getPayload();
         } catch (JwtException | IllegalArgumentException ex) {
-            throw new IllegalIdentifierException("Invalid or expired JWT token");
+            throw new InvalidResourceFoundException("Invalid token");
         }
     }
 
@@ -129,7 +130,7 @@ public class JwtService {
 
         String type = claims.get("tpe", String.class);
         if (!"access".equals(type)) {
-            throw new IllegalIdentifierException("Invalid token type");
+            throw new InvalidResourceFoundException("Invalid token type");
         }
 
         return claims;
@@ -140,7 +141,7 @@ public class JwtService {
 
         String type = claims.get("tpe", String.class);
         if (!"refresh".equals(type)) {
-            throw new IllegalIdentifierException("Invalid token type");
+            throw new InvalidResourceFoundException("Invalid token type");
         }
 
         return claims;

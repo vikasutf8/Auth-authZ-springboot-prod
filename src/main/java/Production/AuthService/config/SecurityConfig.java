@@ -3,6 +3,7 @@ package Production.AuthService.config;
 import Production.AuthService.SecurityUtils.JwtAuthenticationFilter;
 import Production.AuthService.SecurityUtils.JwtService;
 import Production.AuthService.entities.User;
+import Production.AuthService.exceptions.CustomAuthenticationEntryPoint;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,47 +35,10 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthenticationFilter jwtauthenticationFilter;
 
+    @Autowired
+    private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
-    //    @Bean
-//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//
-//        http
-//                .csrf(AbstractHttpConfigurer::disable)
-//                .cors(Customizer.withDefaults())
-//                .sessionManagement(sm ->
-//                        sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-//                )
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/h2-console/**").permitAll()
-//                        .requestMatchers("/api/v3/auth/login").permitAll()
-//                        .requestMatchers("/api/v3/user/**").permitAll()
-//                        .anyRequest().authenticated()
-//                )
-//                .exceptionHandling(ex -> ex
-//                        .authenticationEntryPoint((request, response, authException) -> {
-//
-//                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-//                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-//
-//                            String message = "Unauthorized access: " + authException.getMessage();
-//
-//                            Map<String, Object> errorMap = Map.of(
-//                                    "status", 401,
-//                                    "error", "UNAUTHORIZED",
-//                                    "message", message,
-//                                    "path", request.getRequestURI(),
-//                                    "timestamp", Instant.now().toString()
-//                            );
-//
-//                            ObjectMapper mapper = new ObjectMapper();
-//                            response.getWriter().write(mapper.writeValueAsString(errorMap));
-//                        })
-//                )
-//                .httpBasic(AbstractHttpConfigurer::disable) // JWT only
-//                .addFilterBefore(jwtauthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-//
-//        return http.build();
-//    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
@@ -94,22 +58,8 @@ public class SecurityConfig {
                 .headers(headers ->
                         headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
                 )
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint((request, response, authException) -> {
-
-                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-
-                            Map<String, Object> errorMap = Map.of(
-                                    "status", 401,
-                                    "error", "UNAUTHORIZED",
-                                    "message", "Unauthorized access",
-                                    "path", request.getRequestURI(),
-                                    "timestamp", Instant.now().toString()
-                            );
-
-                            new ObjectMapper().writeValue(response.getWriter(), errorMap);
-                        })
+                .exceptionHandling(ex ->
+                        ex.authenticationEntryPoint(customAuthenticationEntryPoint)
                 )
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .addFilterBefore(

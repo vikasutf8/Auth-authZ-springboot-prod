@@ -23,6 +23,11 @@ public class GlobalExceptionHandler {
         return buildError(ex.getMessage(), HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(InvalidResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleInvalid(InvalidResourceFoundException ex) {
+        return buildError(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
     private ResponseEntity<ErrorResponse> buildError(String message, HttpStatus status) {
         return ResponseEntity.status(status).body(
                 new ErrorResponse(Instant.now(),message,status)
