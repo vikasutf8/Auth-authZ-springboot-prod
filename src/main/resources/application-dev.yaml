@@ -52,11 +52,18 @@ security:
     access-ttl-seconds: ${JWT_ACCESS_TTL_SECONDS:3600}
     refresh-ttl-seconds: ${JWT_REFRESH_TTL_SECONDS:86400}
 
-    cookie:
-      secure: ${JWT_COOKIE_SECURE:true}
-      http-only: ${JWT_COOKIE_HTTP_ONLY:true}
-      same-site: ${JWT_COOKIE_SAME_SITE:Lax}
-      refresh-token-name: ${JWT_REFRESH_COOKIE_NAME:refreshToken}
+#    cookie:
+#      secure: ${JWT_COOKIE_SECURE:true}
+#      http-only: ${JWT_COOKIE_HTTP_ONLY:true}
+#      same-site: ${JWT_COOKIE_SAME_SITE:Lax}
+#      refresh-token-name: ${JWT_REFRESH_COOKIE_NAME:refreshToken}
+
+
+    refresh-token-cookie-name: refresh_token_cookie
+    cookie-http-only: true
+    cookie-secure: false   # true in prod (HTTPS)
+    cookie-domain: localhost
+    cookie-same-site: Lax
 
 
 

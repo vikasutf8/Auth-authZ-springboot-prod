@@ -1,5 +1,6 @@
 package Production.AuthService.controllers;
 
+import Production.AuthService.SecurityUtils.CookieService;
 import Production.AuthService.config.SecurityConfig;
 import Production.AuthService.SecurityUtils.JwtService;
 import Production.AuthService.dtos.LoginRequestDto;
@@ -12,6 +13,7 @@ import Production.AuthService.exceptions.InvalidResourceFoundException;
 import Production.AuthService.repositories.RefreshTokenRepository;
 import Production.AuthService.repositories.UserRepository;
 import Production.AuthService.services.AuthService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,9 +45,10 @@ public class AuthController {
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final ModelMapper modelMapper;
+    private final CookieService cookieService;
 
     @PostMapping("/login")
-    public ResponseEntity<TokenResponseDto> loginUser(@Valid @RequestBody LoginRequestDto loginRequestDto){
+    public ResponseEntity<TokenResponseDto> loginUser(@Valid @RequestBody LoginRequestDto loginRequestDto, HttpServletResponse response){
 
         log.info(loginRequestDto.username(),loginRequestDto.password());
         //authenticate
@@ -72,6 +75,11 @@ public class AuthController {
         //generate token
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user,refreshTokendb.getJti()); //its db val
+
+        //attach cookies
+        cookieService.attachRefreshTokenCookie(response,refreshToken,(int)jwtService.getRefreshTTL());
+        cookieService.addNoStoreHeaders(response);
+
 
         TokenResponseDto tokenResponseDto =TokenResponseDto.
                 bearer(accessToken,refreshToken, jwtService.getAccessTTL(),"Bearer",modelMapper.map(user,UserResponseDto.class));
