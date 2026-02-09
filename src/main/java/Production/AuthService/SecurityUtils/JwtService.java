@@ -151,6 +151,15 @@ public class JwtService {
         Claims claims = validateAccessToken(token);
         return UUID.fromString(claims.getSubject());
     }
+    public UUID extractUserIdFromRefreshToken(String token) {
+        Claims claims = validateRefreshToken(token);
+        return UUID.fromString(claims.getSubject());
+    }
+
+    public String extractRefreshTokenId(String token){
+        Claims claims = validateAccessToken(token);
+        return  claims.getId();
+    }
 
     public String extractEmail(String token) {
         return validateAccessToken(token).get("email", String.class);
