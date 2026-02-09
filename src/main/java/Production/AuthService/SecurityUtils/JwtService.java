@@ -130,7 +130,7 @@ public class JwtService {
 
         String type = claims.get("tpe", String.class);
         if (!"access".equals(type)) {
-            throw new InvalidResourceFoundException("Invalid token type");
+            throw new InvalidResourceFoundException("Invalid access-token type");
         }
 
         return claims;
@@ -141,7 +141,7 @@ public class JwtService {
 
         String type = claims.get("tpe", String.class);
         if (!"refresh".equals(type)) {
-            throw new InvalidResourceFoundException("Invalid token type");
+            throw new InvalidResourceFoundException("Invalid refresh-token type");
         }
 
         return claims;
@@ -157,7 +157,7 @@ public class JwtService {
     }
 
     public String extractRefreshTokenId(String token){
-        Claims claims = validateAccessToken(token);
+        Claims claims = validateRefreshToken(token);
         return  claims.getId();
     }
 

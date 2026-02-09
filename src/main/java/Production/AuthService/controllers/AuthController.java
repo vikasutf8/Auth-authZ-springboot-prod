@@ -86,7 +86,7 @@ public class AuthController {
 
 
         TokenResponseDto tokenResponseDto =TokenResponseDto.
-                bearer(accessToken,refreshToken, jwtService.getAccessTTL(),"Bearer",modelMapper.map(user,UserResponseDto.class));
+                bearer(accessToken,refreshToken, jwtService.getAccessTTL(),"refresh",modelMapper.map(user,UserResponseDto.class));
 
         return  ResponseEntity.ok(tokenResponseDto);
     }
@@ -118,7 +118,7 @@ public class AuthController {
         //read token from cookie
 
         String refreshTokenfromRequest =readRefreshTokenFromRequest(refreshTokenRequest,request).orElseThrow(()->new InvalidResourceFoundException("Refresh token missing"));
-        if(!jwtService.validateRefreshToken(refreshTokenfromRequest).isEmpty()){
+        if(jwtService.validateRefreshToken(refreshTokenfromRequest).isEmpty()){
             throw new InvalidResourceFoundException("Invalid Cred;");
         }
 
@@ -134,9 +134,9 @@ public class AuthController {
             throw new InvalidResourceFoundException("Token expired");
         }
 
-        if(storedRefreshToken.getUser().getId().equals(userId)){
-            throw new InvalidResourceFoundException("Invalid User");
-        }
+//        if(storedRefreshToken.getUser().getId().equals(userId)){
+//            throw new InvalidResourceFoundException("Invalid User");
+//        }
 
         //refresh token rotate
         storedRefreshToken.setRevoked(true);
