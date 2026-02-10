@@ -19,7 +19,9 @@ public final class RoleConst {
     public static final String DIRECTOR = "DIRECTOR";
     public static final String HOD = "HOD";
     public static final String DEVELOPER = "DEVELOPER";
+
     public static final String QA = "QA";
+    public static final String DEFUALT = "GUEST";
 
     /** All roles in one place */
     public static final List<String> ALL_ROLES = List.of(
@@ -35,7 +37,8 @@ public final class RoleConst {
             DIRECTOR,
             HOD,
             DEVELOPER,
-            QA
+            QA,
+            DEFUALT
     );
 }
 

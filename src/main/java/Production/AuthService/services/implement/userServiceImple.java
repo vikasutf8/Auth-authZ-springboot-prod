@@ -1,5 +1,6 @@
 package Production.AuthService.services.implement;
 
+import Production.AuthService.Constant.RoleConst;
 import Production.AuthService.dtos.RoleDto;
 import Production.AuthService.dtos.UserRequestDto;
 import Production.AuthService.dtos.UserResponseDto;
@@ -49,8 +50,15 @@ public class userServiceImple implements UserService {
 //                )
 //                .collect(Collectors.toSet());
 
-        user.setRoles(null); //explicit handle
+//        user.setRoles(null); //explicit handle
 
+        // ✅ Assign DEFAULT role (GUEST)
+        Role defaultRole = roleRepository.findByName(RoleConst.DEFUALT)
+                .orElseThrow(() ->
+                        new IllegalStateException("Default role GUEST not found in DB")
+                );
+
+        user.setRoles(Set.of(defaultRole));
         User savedUser = userRepository.save(user);
         log.info("User created successfully check to db");
         return modelMapper.map(savedUser, UserResponseDto.class);
