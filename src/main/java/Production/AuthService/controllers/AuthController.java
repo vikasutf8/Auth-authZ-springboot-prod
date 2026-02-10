@@ -11,6 +11,8 @@ import Production.AuthService.repositories.RefreshTokenRepository;
 import Production.AuthService.repositories.UserRepository;
 import Production.AuthService.services.AuthService;
 import io.jsonwebtoken.JwtException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -50,7 +52,7 @@ public class AuthController {
     private final JwtService jwtService;
     private final ModelMapper modelMapper;
     private final CookieService cookieService;
-
+    @Operation(summary = "Login user")
     @PostMapping("/login")
     public ResponseEntity<TokenResponseDto> loginUser(@Valid @RequestBody LoginRequestDto loginRequestDto, HttpServletResponse response){
 
@@ -109,6 +111,8 @@ public class AuthController {
     }
 
     //refresh-token /access-token renew
+    @Operation(summary = "Refresh access token")
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/refresh")
     public ResponseEntity<TokenResponseDto> refreshToken(
             @RequestBody(required = false) RefreshTokenRequest refreshTokenRequest,
