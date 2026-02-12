@@ -44,10 +44,10 @@ public class userServiceImple implements UserService {
 //        Set<Role> roles = userRequestDto.getRoles().stream()
 //                .map(roleDto ->
 //                        roleRepository.findById(roleDto.getId())
+//                )
 //                                .orElseThrow(() ->
 //                                        new RuntimeException("Role not found: " + roleDto.getId())
 //                                )
-//                )
 //                .collect(Collectors.toSet());
 
 //        user.setRoles(null); //explicit handle
