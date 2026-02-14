@@ -4,7 +4,9 @@
 
 - step2:  frontend at different origin so CORS
 
+- adding Jwt filters
 
+- Oauth concept -pending 
 
 # API Documation : Swagger 
 `http://localhost:{9081==PORT}/swagger-ui/index.html#/`
