@@ -220,6 +220,8 @@ public class AuthController {
 
         // 1️⃣ Cookie (preferred)
         if (request.getCookies() != null) {
+
+            System.out.println(Arrays.toString(request.getCookies()) +"this is cookie that get ==referesh token");
 //            for (Cookie cookie : request.getCookies()) {
 //                if ("refresh_token".equals(cookie.getName())
 //                        && cookie.getValue() != null
