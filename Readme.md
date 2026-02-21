@@ -12,3 +12,6 @@
 
 # API Documation : Swagger 
 `http://localhost:{9081==PORT}/swagger-ui/index.html#/`
+
+### Postman 
+`https://crimson-comet-847628.postman.co/workspace/springBoot-fitness~3624bf6f-c3b5-4845-b04e-6d7f7fcd62fc/collection/25455646-cd70689a-dba5-41cc-8c5e-2caa1c08674c?action=share&creator=25455646`
