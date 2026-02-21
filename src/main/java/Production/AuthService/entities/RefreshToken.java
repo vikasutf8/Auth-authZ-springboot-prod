@@ -25,7 +25,7 @@ public class RefreshToken {
     @Column(name = "jti",unique = true,nullable = false)
     private String jti;
 
-    @ManyToOne(optional = false,fetch = FetchType.LAZY)
+    @ManyToOne(optional = false,fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id",nullable = false)
     private User user;
 

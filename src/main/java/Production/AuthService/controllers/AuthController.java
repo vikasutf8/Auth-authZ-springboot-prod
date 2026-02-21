@@ -138,9 +138,9 @@ public class AuthController {
             throw new InvalidResourceFoundException("Token expired");
         }
 
-//        if(storedRefreshToken.getUser().getId().equals(userId)){
-//            throw new InvalidResourceFoundException("Invalid User");
-//        }
+        if(storedRefreshToken.getUser().getId().equals(userId)){
+            throw new InvalidResourceFoundException("Invalid User");
+        }
 
         //refresh token rotate
         storedRefreshToken.setRevoked(true);
@@ -220,6 +220,8 @@ public class AuthController {
 
         // 1️⃣ Cookie (preferred)
         if (request.getCookies() != null) {
+
+            System.out.println(Arrays.toString(request.getCookies()) +"this is cookie that get ==referesh token");
 //            for (Cookie cookie : request.getCookies()) {
 //                if ("refresh_token".equals(cookie.getName())
 //                        && cookie.getValue() != null
