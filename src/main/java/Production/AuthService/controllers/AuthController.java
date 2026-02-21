@@ -138,9 +138,9 @@ public class AuthController {
             throw new InvalidResourceFoundException("Token expired");
         }
 
-//        if(storedRefreshToken.getUser().getId().equals(userId)){
-//            throw new InvalidResourceFoundException("Invalid User");
-//        }
+        if(storedRefreshToken.getUser().getId().equals(userId)){
+            throw new InvalidResourceFoundException("Invalid User");
+        }
 
         //refresh token rotate
         storedRefreshToken.setRevoked(true);
