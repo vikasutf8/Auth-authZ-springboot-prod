@@ -61,11 +61,18 @@ public class SecurityConfig {
                         sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS) /// IMPORTANT
                 )
                 .authorizeHttpRequests(auth -> auth
+                        // Public URLs
                         .requestMatchers(PublicURLs.ALL_PUBLIC_URL).permitAll()
 
-                        // 1️⃣ Allow ALL GET requests (including guest)
-                        .requestMatchers(HttpMethod.GET, "/**").hasAllRoles()
+                        // 1️⃣ CREATE → only DEVELOPER
+                        .requestMatchers(HttpMethod.POST, "/api/v3/user/**")
+                        .hasRole("DEVELOPER")
 
+                        // 2️⃣ GET ALL → only ADMIN & DEVELOPER
+                        .requestMatchers(HttpMethod.GET, "/api/v3/user/**")
+                        .hasAnyRole("ADMIN", "DEVELOPER")
+
+                        // Everything else must be authenticated
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth -> oauth
