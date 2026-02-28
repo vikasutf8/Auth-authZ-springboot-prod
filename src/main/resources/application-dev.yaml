@@ -66,7 +66,7 @@ security:
 app:
   auth:
     frontend:
-      success-redirect: "http://localhost:3000/oauth-success"
+      success-redirect: "http://localhost:3456/oauth-success"
 
 springdoc:
   api-docs:
@@ -79,9 +79,13 @@ springdoc:
     tagsSorter: alpha
 
 logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%X{correlationId}] %-5level %logger - %msg%n"
+
   level:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql: TRACE
     org.springframework.boot.context.config: DEBUG
     org.springframework.security: DEBUG
     org.springframework.web: DEBUG
+
