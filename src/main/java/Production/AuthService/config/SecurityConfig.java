@@ -4,6 +4,7 @@ import Production.AuthService.SecurityUtils.JwtAuthenticationFilter;
 import Production.AuthService.SecurityUtils.JwtService;
 import Production.AuthService.entities.User;
 import Production.AuthService.exceptions.CustomAuthenticationEntryPoint;
+import Production.AuthService.oauth.OAuth2FailureHandler;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,15 +23,21 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import tools.jackson.databind.ObjectMapper;
-
+import Production.AuthService.oauth.OAuth2SuccessHandler;
 import java.time.Instant;
 import java.util.Map;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    @Autowired
+    private OAuth2SuccessHandler oAuth2SuccessHandler;
+    @Autowired
+    private OAuth2FailureHandler oAuth2FailureHandler;
 
     @Autowired
     private JwtAuthenticationFilter jwtauthenticationFilter;
@@ -41,12 +48,11 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .sessionManagement(sm ->
-                        sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS) /// IMPORTANT
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
@@ -58,6 +64,12 @@ public class SecurityConfig {
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
+                .oauth2Login(oauth -> oauth
+                        .successHandler(oAuth2SuccessHandler)
+                        .failureHandler(oAuth2FailureHandler)
+                )
+
+                .logout(AbstractHttpConfigurer::disable)
                 .headers(headers ->
                         headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
                 )
@@ -72,6 +84,7 @@ public class SecurityConfig {
 
         return http.build();
     }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {

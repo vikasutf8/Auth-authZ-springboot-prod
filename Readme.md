@@ -18,3 +18,19 @@
 
 
 [TODO] Oauth with google/github server----------do it rightnow
+### Oauth -- Only Treat on backend --[Backend As a Service]
+
+user --->use some react/browser  --> React connect Backend[SpringBoot]
+
+Client  === Browser(react)+ Backend(Springboot)  NOTE: react we dont use(backend provide token to it)
+Google/github === auth provider used as like of auth server(auth server >>>> auth provider)
+Resource Server === eg: spring boot written apis -NOTE: not done here...we create our backend server + resource server make it one [client backend  ~~ Resource Server]
+
+authorized redirect url:
+```shell
+${api_domain : http://localhost}:${PORT}/login/oauth2/code/google
+```
+
+
+
+

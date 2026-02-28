@@ -35,6 +35,7 @@ public class User implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     private Provider provider =Provider.LOCAL;
+    private  String providerId;
 
 //    1 to n mapping --- Fk is stored here...owing side and reference at role call as invert side
 //  n to m mapping -- also in some sencerios --join table
