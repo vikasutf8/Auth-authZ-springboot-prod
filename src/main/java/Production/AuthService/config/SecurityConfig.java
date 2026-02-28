@@ -64,7 +64,8 @@ public class SecurityConfig {
                         .requestMatchers(PublicURLs.ALL_PUBLIC_URL).permitAll()
 
                         // 1️⃣ Allow ALL GET requests (including guest)
-                        .requestMatchers(HttpMethod.GET, "/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/**").hasAllRoles()
+
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth -> oauth
