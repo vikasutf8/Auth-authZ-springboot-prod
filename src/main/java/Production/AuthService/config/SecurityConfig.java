@@ -1,8 +1,10 @@
 package Production.AuthService.config;
 
+import Production.AuthService.Constant.PublicURLs;
 import Production.AuthService.SecurityUtils.JwtAuthenticationFilter;
 import Production.AuthService.SecurityUtils.JwtService;
 import Production.AuthService.entities.User;
+import Production.AuthService.exceptions.CustomAccessDeniedHandler;
 import Production.AuthService.exceptions.CustomAuthenticationEntryPoint;
 import Production.AuthService.oauth.OAuth2FailureHandler;
 import jakarta.servlet.http.HttpServletResponse;
@@ -10,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
@@ -45,6 +48,9 @@ public class SecurityConfig {
     @Autowired
     private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
+    @Autowired
+    private CustomAccessDeniedHandler customAccessDeniedHandler;
+
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -55,13 +61,10 @@ public class SecurityConfig {
                         sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS) /// IMPORTANT
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/h2-console/**",
-                                "/api/v3/auth/**",
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/swagger-ui.html"
-                        ).permitAll()
+                        .requestMatchers(PublicURLs.ALL_PUBLIC_URL).permitAll()
+
+                        // 1️⃣ Allow ALL GET requests (including guest)
+                        .requestMatchers(HttpMethod.GET, "/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth -> oauth
@@ -75,6 +78,7 @@ public class SecurityConfig {
                 )
                 .exceptionHandling(ex ->
                         ex.authenticationEntryPoint(customAuthenticationEntryPoint)
+                         .accessDeniedHandler(customAccessDeniedHandler)
                 )
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .addFilterBefore(

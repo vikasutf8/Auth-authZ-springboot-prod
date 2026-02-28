@@ -44,13 +44,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(7); //extract token
-log.info("do filter working here");
+        log.info("do filter working here");
         try {
             // 2️⃣ Validate & parse token
             log.info("works on token");
             Claims claims = jwtService.validateAccessToken(token);
 
             //TODO: IN Prodcution : isEnable check also --adding in Token OR DB calls
+
 
             UUID userId = UUID.fromString(claims.getSubject());
             String email = claims.get("email", String.class);

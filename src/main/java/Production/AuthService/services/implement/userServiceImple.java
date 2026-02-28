@@ -40,25 +40,38 @@ public class userServiceImple implements UserService {
         }
         User user = modelMapper.map(userRequestDto, User.class);
 
-        // handle roles safely
-//        Set<Role> roles = userRequestDto.getRoles().stream()
-//                .map(roleDto ->
-//                        roleRepository.findById(roleDto.getId())
-//                )
-//                                .orElseThrow(() ->
-//                                        new RuntimeException("Role not found: " + roleDto.getId())
-//                                )
-//                .collect(Collectors.toSet());
 
-//        user.setRoles(null); //explicit handle
 
-        // ✅ Assign DEFAULT role (GUEST)
-        Role defaultRole = roleRepository.findByName(RoleConst.DEFUALT)
-                .orElseThrow(() ->
-                        new IllegalStateException("Default role GUEST not found in DB")
-                );
+        Set<Role> roleEntities;
 
-        user.setRoles(Set.of(defaultRole));
+        if (userRequestDto.getRoles() == null || userRequestDto.getRoles().isEmpty()) {
+
+            // Assign DEFAULT role
+            Role defaultRole = roleRepository.findByName(RoleConst.DEFUALT)
+                    .orElseThrow(() ->
+                            new IllegalStateException("Default role GUEST not found in DB")
+                    );
+
+            roleEntities = Set.of(defaultRole);
+
+        } else {
+
+            roleEntities = userRequestDto.getRoles()
+                    .stream()
+                    .map(roleDto ->
+                            roleRepository.findByName(roleDto.getName())
+                                    .orElseThrow(() ->
+                                            new IllegalArgumentException(
+                                                    "Role not found: " + roleDto.getName()
+                                            )
+                                    )
+                    )
+                    .collect(Collectors.toSet());
+        }
+
+        user.setRoles(roleEntities);
+
+//        user.setRoles(Set.of(defaultRole));
         User savedUser = userRepository.save(user);
         log.info("User created successfully check to db");
         return modelMapper.map(savedUser, UserResponseDto.class);
