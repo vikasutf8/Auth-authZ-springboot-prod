@@ -1,46 +1,91 @@
 server:
   port: 9081
 
-
 spring:
-# conifiguration database
   datasource:
-    url: jdbc:h2:mem:authdb           # In-memory DB (data lost on restart)
+    url: jdbc:h2:mem:authdb
     driver-class-name: org.h2.Driver
-    username: admin                     # Default H2 username
-    password: admin              # Default H2 password (empty)
+    username: admin
+    password: admin
+
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: update                # Auto create/update tables
-    show-sql: true                    # Show SQL in logs (DEV only)
+      ddl-auto: update
+    show-sql: true
     properties:
       hibernate:
-        format_sql: true  # frmate sql querys
+        format_sql: true
     open-in-view: false
+
   h2:
     console:
-      enabled: true                   # Enables H2 web console
-      path: /h2-console               # Access at http://localhost:9081/h2-console
+      enabled: true
+      path: /h2-console
     settings:
       web-allow-others: false
+
+  security:
+    oauth2:
+      client:
+        registration:
+
+          google:
+            client-id: YOUR_GOOGLE_CLIENT_ID
+            client-secret: YOUR_GOOGLE_CLIENT_SECRET
+            scope:
+              - email
+              - profile
+
+          github:
+            client-id: YOUR_GITHUB_CLIENT_ID
+            client-secret: YOUR_GITHUB_CLIENT_SECRET
+            scope:
+              - user:email
+
+        provider:
+          github:
+            authorization-uri: https://github.com/login/oauth/authorize
+            token-uri: https://github.com/login/oauth/access_token
+            user-info-uri: https://api.github.com/user
+            user-name-attribute: id
+
+# ✅ YOUR custom JWT config (NOT under spring)
+security:
+  jwt:
+    secret: ${JWT_SECRET:saiofalvkasfbehwapofhjashofjaswfpojasfvbafophfifonfoshjfwefjifslajfsah}
+    issuer: ${JWT_ISSUER:api.substring.com}
+    access-ttl-seconds: ${JWT_ACCESS_TTL_SECONDS:3600}
+    refresh-ttl-seconds: ${JWT_REFRESH_TTL_SECONDS:86400}
+    refresh-token-cookie-name: refresh_token_cookie
+    cookie-http-only: true
+    cookie-secure: false
+    cookie-domain: localhost
+    cookie-same-site: Lax
+
+app:
+  auth:
+    frontend:
+      success-redirect: "http://localhost:3456/oauth-success"
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+
 logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%X{correlationId}] %-5level %logger - %msg%n"
+
   level:
-    org.hibernate.SQL: DEBUG           # Logs SQL queries
-    org.hibernate.type.descriptor.sql: TRACE  # Logs query parameters
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql: TRACE
     org.springframework.boot.context.config: DEBUG
-
-
-
-# Email config
-
-
-# Oauth2 config
-
-
-# Keyclock
-
-
-
-
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
 

@@ -3,11 +3,12 @@ package Production.AuthService.entities;
 import Production.AuthService.entities.enums.Provider;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 
 @Getter
@@ -16,7 +17,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "users")
-public class User {
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -34,6 +35,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private Provider provider =Provider.LOCAL;
+    private  String providerId;
 
 //    1 to n mapping --- Fk is stored here...owing side and reference at role call as invert side
 //  n to m mapping -- also in some sencerios --join table
@@ -52,5 +54,20 @@ public class User {
         Instant now =Instant.now();
         if(createdAt ==null)createdAt=now;
         updatedAt=now;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+
+        return roles
+                .stream()
+                .map(role ->
+                        new SimpleGrantedAuthority(role.getName())).toList();
+//        return List.of();
+    }
+
+    @Override
+    public String getUsername() {
+        return this.email;
     }
 }
