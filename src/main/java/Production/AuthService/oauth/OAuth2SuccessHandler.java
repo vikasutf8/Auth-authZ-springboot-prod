@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,15 +26,14 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.logging.Logger;
 
+
+@Slf4j
 @Component
 @RequiredArgsConstructor
 @Transactional
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
-    private static final Logger logger =
-            (Logger) LoggerFactory.getLogger(OAuth2SuccessHandler.class);
 
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
@@ -49,7 +49,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                                         Authentication authentication)
             throws IOException, ServletException {
 
-        logger.info("OAuth2 authentication success");
+        log.info("OAuth2 authentication success");
 
         OAuth2User oAuth2User =
                 (OAuth2User) authentication.getPrincipal();
@@ -58,11 +58,11 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                 ((OAuth2AuthenticationToken) authentication)
                         .getAuthorizedClientRegistrationId();
 
-        logger.info("Provider: {}");
+        log.info("Provider: {}{}", registrationId);
 
         // 🔹 Process user
         User user = processOAuthUser(registrationId, oAuth2User);
-        logger.info(user+"user"); //hole user i recived here ....from db
+        log.info("{}user", user); //hole user i recived here ....from db
 //     SKIP
     // 🔹 Revoke old refresh tokens (recommended) /// what we dont do
 //        refreshTokenRepository
@@ -99,9 +99,10 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         );
 
         // 🔹 Redirect frontend with access token
-        response.sendRedirect(
-                frontEndSuccessUrl + "?accessToken=" + accessToken
-        );
+//        response.sendRedirect(
+//                frontEndSuccessUrl + "?accessToken=" + accessToken
+//        );
+        response.getWriter().write("Login successful");
     }
 
     // =======================================================
