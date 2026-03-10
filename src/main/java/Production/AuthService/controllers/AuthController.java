@@ -128,8 +128,9 @@ public class AuthController {
 
         String jti = jwtService.extractRefreshTokenId(refreshTokenfromRequest);
         UUID userId =jwtService.extractUserIdFromRefreshToken(refreshTokenfromRequest);
+        log.info(userId+"this is user id from refresh token");
         RefreshToken storedRefreshToken =refreshTokenRepository.findByJti(jti).orElseThrow(()-> new InvalidResourceFoundException("Invalid Cred;"));
-
+        log.info(storedRefreshToken+"stored refresh token");
         if(storedRefreshToken.isRevoked()){
             throw new InvalidResourceFoundException("Revoked Already");
         }
@@ -138,9 +139,9 @@ public class AuthController {
             throw new InvalidResourceFoundException("Token expired");
         }
 
-        if(storedRefreshToken.getUser().getId().equals(userId)){
-            throw new InvalidResourceFoundException("Invalid User");
-        }
+//        if(storedRefreshToken.getUser().getId().equals(userId)){
+//            throw new InvalidResourceFoundException("Invalid User");
+//        }
 
         //refresh token rotate
         storedRefreshToken.setRevoked(true);
