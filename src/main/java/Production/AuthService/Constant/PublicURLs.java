@@ -21,7 +21,8 @@ public class PublicURLs {
 
     // 🔓 Authentication Endpoints
     public static final String[] AUTH = {
-            "/api/auth/**"
+            "/api/auth/login",
+            "/api/auth/register"
     };
 
     // 🔓 OAuth2 Endpoints
