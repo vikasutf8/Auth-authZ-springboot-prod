@@ -65,12 +65,13 @@ public class SecurityConfig {
                         .requestMatchers(PublicURLs.ALL_PUBLIC_URL).permitAll()
 
                         // 1️⃣ CREATE → only DEVELOPER
-                        .requestMatchers(HttpMethod.POST, "/api/v3/user/**")
+                        .requestMatchers(HttpMethod.POST, "/api/v3/user/**","/api/v3/auth/refresh")
                         .hasRole("DEVELOPER")
 
                         // 2️⃣ GET ALL → only ADMIN & DEVELOPER
                         .requestMatchers(HttpMethod.GET, "/api/v3/user/**")
                         .hasAnyRole("ADMIN", "DEVELOPER")
+
 
                         // Everything else must be authenticated
                         .anyRequest().authenticated()

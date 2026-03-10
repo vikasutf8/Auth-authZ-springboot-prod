@@ -90,10 +90,14 @@ public class JwtService {
         Instant now = Instant.now();
         Instant expiry = now.plusSeconds(refreshTTL);
 
+//        List<String> roles = user.getRoles()
+//                .stream()
+//                .map(Role::getName)   // or role.getRoleName()
+//                .collect(Collectors.toList());
         List<String> roles = user.getRoles()
                 .stream()
-                .map(Role::getName)   // or role.getRoleName()
-                .collect(Collectors.toList());
+                .map(role -> "ROLE_" + role.getName())
+                .toList();
 
         return Jwts.builder()
                 .issuer(issuer)

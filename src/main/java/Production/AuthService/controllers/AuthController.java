@@ -77,6 +77,8 @@ public class AuthController {
                 .build();
         refreshTokenRepository.save(refreshTokendb);
 
+        log.info(jti+"this is jti that gen for refresh token"+refreshTokendb.getJti());
+
 
         //generate token
         String accessToken = jwtService.generateAccessToken(user);
@@ -84,6 +86,7 @@ public class AuthController {
 
         //attach cookies
         cookieService.attachRefreshTokenCookie(response,refreshToken,(int)jwtService.getRefreshTTL());
+        log.info( user.getId()+"Cookes attactched to response" +refreshToken);
         cookieService.addNoStoreHeaders(response);
 
 
@@ -122,13 +125,14 @@ public class AuthController {
         //read token from cookie
 
         String refreshTokenfromRequest =readRefreshTokenFromRequest(refreshTokenRequest,request).orElseThrow(()->new InvalidResourceFoundException("Refresh token missing"));
+        log.info(refreshTokenfromRequest+"refreshTOken from request cookies");
         if(jwtService.validateRefreshToken(refreshTokenfromRequest).isEmpty()){
             throw new InvalidResourceFoundException("Invalid Cred;");
         }
 
         String jti = jwtService.extractRefreshTokenId(refreshTokenfromRequest);
         UUID userId =jwtService.extractUserIdFromRefreshToken(refreshTokenfromRequest);
-        log.info(userId+"this is user id from refresh token");
+        log.info(userId+"this is user id from refresh token"+jti);
         RefreshToken storedRefreshToken =refreshTokenRepository.findByJti(jti).orElseThrow(()-> new InvalidResourceFoundException("Invalid Cred;"));
         log.info(storedRefreshToken+"stored refresh token");
         if(storedRefreshToken.isRevoked()){
@@ -139,9 +143,11 @@ public class AuthController {
             throw new InvalidResourceFoundException("Token expired");
         }
 
-//        if(storedRefreshToken.getUser().getId().equals(userId)){
-//            throw new InvalidResourceFoundException("Invalid User");
-//        }
+        if(!storedRefreshToken.getUser().getId().equals(userId)){
+            log.info(storedRefreshToken.getUser().getId()+"this is stored userid");
+            log.info(userId+"this is  userid");
+            throw new InvalidResourceFoundException("Invalid User");
+        }
 
         //refresh token rotate
         storedRefreshToken.setRevoked(true);
