@@ -57,10 +57,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String email = claims.get("email", String.class);
             List<String> roles = claims.get("roles", List.class);
 
+            log.info("Roles: {}", roles);
+
+
             // 3️⃣ Convert roles to authorities
             List<SimpleGrantedAuthority> authorities = roles.stream()
                     .map(SimpleGrantedAuthority::new)
                     .toList();
+
+            log.info("Authorities: {}", authorities);
 
             // 4️⃣ Create authentication object
             UsernamePasswordAuthenticationToken authentication =

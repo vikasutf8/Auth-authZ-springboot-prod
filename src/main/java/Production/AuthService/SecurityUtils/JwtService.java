@@ -10,9 +10,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.hibernate.boot.model.naming.IllegalIdentifierException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -70,8 +68,8 @@ public class JwtService {
 
         List<String> roles = user.getRoles()
                 .stream()
-                .map(Role::getName)   // or role.getRoleName()
-                .collect(Collectors.toList());
+                .map(role -> "ROLE_" + role.getName())
+                .toList();
 
         return Jwts.builder()
                 .issuer(issuer)
@@ -165,7 +163,13 @@ public class JwtService {
         return validateAccessToken(token).get("email", String.class);
     }
 
-    public List<String> extractRoles(String token) {
-        return validateAccessToken(token).get("roles", List.class);
-    }
+//    public List<String> extractRoles(String token) {
+//        return validateAccessToken(token).get("roles", List.class);
+//    }
+    public List extractRoles(String token) {
+        return validateAccessToken(token).get("roles", List.class)
+                .stream()
+                .map(Object::toString)
+                .toList();
+}
 }
