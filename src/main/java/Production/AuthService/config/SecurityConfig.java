@@ -1,8 +1,10 @@
 package Production.AuthService.config;
 
+import Production.AuthService.SecurityUtils.CustomUserService;
 import Production.AuthService.SecurityUtils.JwtAuthenticationFilter;
 import Production.AuthService.exceptions.CustomAccessDeniedHandler;
 import Production.AuthService.exceptions.CustomAuthenticationEntryPoint;
+import Production.AuthService.oauth.CustomOAuth2UserService;
 import Production.AuthService.oauth.OAuth2FailureHandler;
 import Production.AuthService.oauth.OAuth2SuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +32,8 @@ public class SecurityConfig {
     private OAuth2SuccessHandler oAuth2SuccessHandler;
     @Autowired
     private OAuth2FailureHandler oAuth2FailureHandler;
+    @Autowired
+    private CustomOAuth2UserService customOAuth2UserService;
 
     @Autowired
     private JwtAuthenticationFilter jwtauthenticationFilter;
@@ -39,6 +43,9 @@ public class SecurityConfig {
 
     @Autowired
     private CustomAccessDeniedHandler customAccessDeniedHandler;
+
+    @Autowired
+    private CustomUserService customUserService;
 
 
     @Bean
@@ -59,10 +66,13 @@ public class SecurityConfig {
                                 .requestMatchers("/api/v1/auth/**").permitAll()
                                 .anyRequest().authenticated()
                 )
-//                .oauth2Login(oauth -> oauth
-//                        .successHandler(oAuth2SuccessHandler)
-//                        .failureHandler(oAuth2FailureHandler)
-//                )
+                .oauth2Login(oauth -> oauth
+                        .userInfoEndpoint(u -> u
+                                .userService(customOAuth2UserService)  // our custom loader
+                        )
+                        .successHandler(oAuth2SuccessHandler)
+                        .failureHandler(oAuth2FailureHandler)
+                )
 //
 //                .logout(AbstractHttpConfigurer::disable)
 //                .headers(headers ->
@@ -102,8 +112,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(customUserService);
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }

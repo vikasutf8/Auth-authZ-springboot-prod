@@ -14,7 +14,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -145,7 +144,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                                 .email(email)
                                 .name(name)
                                 .imageUri(picture)
-                                .enable(true)
+                                .enabled(true)
                                 .provider(Provider.GOOGLE)
                                 .providerId(providerId)
                                 .build()
@@ -175,7 +174,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                                 .email(email)
                                 .name(name)
                                 .imageUri(image)
-                                .enable(true)
+                                .enabled(true)
                                 .provider(Provider.GITHUB)
                                 .providerId(providerId)
                                 .build()

@@ -99,6 +99,40 @@ Client → GET /any (Authorization: Bearer <token>)
 
 # 🔁 OAuth Flow (Backend Only)
 
+```shell
+1. SecurityConfig          — add oauth2Login, successHandler, failureHandler
+2. OAuth2UserInfo          — abstract, normalize Google/GitHub provider data
+3. GoogleOAuth2UserInfo    — extract fields from Google attributes
+4. GithubOAuth2UserInfo    — extract fields from GitHub attributes
+5. CustomOAuth2UserService — loadUser, upsert User in DB
+6. OAuth2SuccessHandler    — generate JWT, attach cookie, redirect
+7. OAuth2FailureHandler    — redirect with error param
+```
+
+#### sequence
+
+```shell
+Client → GET /oauth2/authorize/google
+  → Spring redirects to Google consent screen
+
+Google → GET /login/oauth2/code/google?code=xxx
+  → CustomOAuth2UserService.loadUser()
+    → fetch attributes from Google
+    → OAuth2UserInfoFactory.getOAuth2UserInfo()   [normalize provider data]
+    → userRepository.findByEmail()
+      → EXISTS  → update name/image                [returning user]
+      → NOT EXISTS → create new User               [first time OAuth]
+  → OAuth2SuccessHandler.onAuthenticationSuccess()
+    → RefreshTokenRepository.save(jti)
+    → JwtService.generateAccessToken()
+    → JwtService.generateRefreshToken(jti)
+    → CookieService.attachRefreshTokenCookie()
+    → redirect → frontend/dashboard?accessToken=xxx
+
+Client (subsequent requests same as JWT flow)
+  → JwtAuthFilter → SecurityContext → Controller
+```
+
 1. User clicks **Login with Google/GitHub**
 2. Browser redirects to:
 
