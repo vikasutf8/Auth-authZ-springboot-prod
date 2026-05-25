@@ -1,6 +1,5 @@
 package Production.AuthService.SecurityUtils;
 
-import Production.AuthService.exceptions.ResourceNotFoundException;
 import Production.AuthService.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
@@ -27,10 +26,12 @@ public class CustomUserService implements UserDetailsService {
 
 
     @Override
-    public UserDetails loadUserByUsername(@NonNull String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(@NonNull String email) throws UsernameNotFoundException {
         /*
         this load user from db
          */
-        return userRepository.findByEmail(username).orElseThrow(()->new ResourceNotFoundException("Invalid Password and Email"));
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+//        return userRepository.findByEmail(username).orElseThrow(()->new ResourceNotFoundException("Invalid Password and Email"));
     }
 }

@@ -14,10 +14,11 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -53,6 +54,16 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         OAuth2User oAuth2User =
                 (OAuth2User) authentication.getPrincipal();
+
+//        Object principal = authentication.getPrincipal();
+//
+//        if (principal instanceof OidcUser oidcUser) {
+//            return oidcUser.getEmail();                         // OIDC — from ID token
+//        } else if (principal instanceof OAuth2User oAuth2User) {
+//            return (String) oAuth2User.getAttributes().get("email");  // OAuth2 — from attributes
+//        }
+//
+//        throw new OAuth2AuthenticationException("Unknown principal type");
 
         String registrationId =
                 ((OAuth2AuthenticationToken) authentication)
@@ -145,7 +156,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                                 .email(email)
                                 .name(name)
                                 .imageUri(picture)
-                                .enable(true)
+                                .enabled(true)
                                 .provider(Provider.GOOGLE)
                                 .providerId(providerId)
                                 .build()
@@ -175,10 +186,22 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                                 .email(email)
                                 .name(name)
                                 .imageUri(image)
-                                .enable(true)
+                                .enabled(true)
                                 .provider(Provider.GITHUB)
                                 .providerId(providerId)
                                 .build()
                 ));
+    }
+
+    private String extractEmail(Authentication authentication) {
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof OidcUser oidcUser) {
+            return oidcUser.getEmail();                         // OIDC — from ID token
+        } else if (principal instanceof OAuth2User oAuth2User) {
+            return (String) oAuth2User.getAttributes().get("email");  // OAuth2 — from attributes
+        }
+
+        throw new OAuth2AuthenticationException("Unknown principal type");
     }
 }
