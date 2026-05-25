@@ -1,5 +1,6 @@
 package Production.AuthService.config;
 
+import Production.AuthService.Oidc.CustomOidcUserService;
 import Production.AuthService.SecurityUtils.CustomUserService;
 import Production.AuthService.SecurityUtils.JwtAuthenticationFilter;
 import Production.AuthService.exceptions.CustomAccessDeniedHandler;
@@ -47,6 +48,8 @@ public class SecurityConfig {
     @Autowired
     private CustomUserService customUserService;
 
+    private CustomOidcUserService customOidcUserService;
+
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -68,6 +71,7 @@ public class SecurityConfig {
                 )
                 .oauth2Login(oauth -> oauth
                         .userInfoEndpoint(u -> u
+                                .oidcUserService(customOidcUserService)
                                 .userService(customOAuth2UserService)  // our custom loader
                         )
                         .successHandler(oAuth2SuccessHandler)

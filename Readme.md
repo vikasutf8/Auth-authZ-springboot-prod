@@ -133,6 +133,76 @@ Client (subsequent requests same as JWT flow)
   → JwtAuthFilter → SecurityContext → Controller
 ```
 
+## OIDC vs OAuth2
+
+```shell
+OAuth2   → "Can I access your Google data?"     → gives you ACCESS TOKEN
+OIDC     → "Who are you?"                        → gives you ID TOKEN (JWT with user claims)
+
+OAuth2UserService  → calls /userinfo endpoint separately to get user data
+OidcUserService    → ID token already HAS user claims (sub, email, name, picture)
+                     no extra HTTP call needed → faster + standard
+```
+
+#### What changes from your current OAuth2 setup
+
+```shell
+CustomOAuth2UserService   →  CustomOidcUserService
+  extends DefaultOAuth2UserService  →  extends OidcUserService
+  OAuth2User return type            →  OidcUser return type
+  manual attribute extraction       →  standardClaims() built-in
+
+SecurityConfig
+  .userService(customOAuth2UserService)   →  .oidcUserService(customOidcUserService)
+
+application.yml
+  scope: email, profile   →  scope: openid, email, profile   ← openid triggers OIDC
+```
+
+#### sequence
+
+```shell
+Client → GET /oauth2/authorize/google
+  → Spring appends scope=openid → triggers OIDC flow
+
+Google → returns ID TOKEN (JWT) + optional access token
+  → Spring validates ID token signature (via Google JWKS endpoint)
+  → Spring calls CustomOidcUserService.loadUser()
+    → OidcUserInfo has standardClaims() — no extra /userinfo call
+    → upsert User in DB same as before
+  → OAuth2SuccessHandler (unchanged)
+    → generate JWT, attach cookie, redirect
+```
+
+#### OAuth2 vs OIDC side by side
+
+```shell
+OAuth2 (GitHub)              OIDC (Google)
+─────────────────────────────────────────────────────────────────
+scope               user:email, read:user        openid, email, profile
+token returned      access token only            ID token (JWT) + access token
+user data           extra /userinfo HTTP call     already in ID token claims
+signature verify    no                           yes — Spring checks Google JWKS
+your service        CustomOAuth2UserService      CustomOidcUserService
+principal type      OAuth2User                   OidcUser
+email extracted     attributes.get("email")      oidcUser.getEmail()
+sub claim           attributes.get("id")         oidcUser.getSubject()
+```
+
+### APIs
+
+```shell
+POST /api/v1/auth/register   →  email/password → JWT
+POST /api/v1/auth/login      →  email/password → JWT
+GET  /oauth2/authorize/google →  OIDC  → ID token validated → JWT
+GET  /oauth2/authorize/github →  OAuth2 → /userinfo call   → JWT
+
+All three end up at OAuth2SuccessHandler or AuthService
+→ same RefreshToken table
+→ same JwtService
+→ same HttpOnly cookie + accessToken response
+```
+
 1. User clicks **Login with Google/GitHub**
 2. Browser redirects to:
 
