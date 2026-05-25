@@ -1,8 +1,8 @@
-package Production.AuthService.dtos;
+package Production.AuthService.dtos.Request;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record LoginRequestDto(
+public record LoginRequest(
         @NotBlank String email,
         @NotBlank String password
 ) {

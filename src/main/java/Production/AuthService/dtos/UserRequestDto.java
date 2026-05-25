@@ -20,11 +20,11 @@ public class UserRequestDto {
     private String password;
     private String imageUri;
 
-    private boolean enable =true;
+    private boolean enable = false; //defualt its is false ...meant in  active
     private Instant createdAt =Instant.now();
     private Instant updatedAt =Instant.now();
 
     private Provider provider =Provider.LOCAL;
 
-    private Set<RoleDto> roles = new HashSet<>();
+    private Set<RoleDto> roles = new HashSet<>(); // set RoleDto like USER,ADMIN
 }
