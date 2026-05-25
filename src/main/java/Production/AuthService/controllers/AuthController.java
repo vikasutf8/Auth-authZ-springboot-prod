@@ -29,8 +29,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -67,6 +65,9 @@ public class AuthController {
          * this is on way ...
          * other way to login as Oauth2 sign up and OIDC way so we again authenticate with provider and then generate token and attach cookie
          */
+
+        return ResponseEntity.ok(authService.loginUser(loginRequestDto, response));
+
 
 //        log.info(loginRequestDto.username(),loginRequestDto.password());
 //        //authenticate
@@ -108,16 +109,16 @@ public class AuthController {
 //        return  ResponseEntity.ok(tokenResponseDto);
     }
 
-    private Authentication authenticate(@Valid LoginRequestDto loginRequestDto) {
-        try{
-            return authenticationManager
-                    .authenticate(new UsernamePasswordAuthenticationToken(
-                            loginRequestDto.username(),loginRequestDto.password()));
-
-        } catch (Exception e) {
-            throw new InvalidResourceFoundException("Invalid password and Email !!");
-        }
-    }
+//    private Authentication authenticate(@Valid LoginRequestDto loginRequestDto) {
+//        try{
+//            return authenticationManager
+//                    .authenticate(new UsernamePasswordAuthenticationToken(
+//                            loginRequestDto.usnername(),loginRequestDto.password()));
+//
+//        } catch (Exception e) {
+//            throw new InvalidResourceFoundException("Invalid password and Email !!");
+//        }
+//    }
 
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> registerUser(@RequestBody RegisterRequest registerRequestDto) {

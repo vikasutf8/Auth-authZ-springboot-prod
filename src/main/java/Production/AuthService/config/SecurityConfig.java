@@ -1,37 +1,26 @@
 package Production.AuthService.config;
 
-import Production.AuthService.Constant.PublicURLs;
 import Production.AuthService.SecurityUtils.JwtAuthenticationFilter;
-import Production.AuthService.SecurityUtils.JwtService;
-import Production.AuthService.entities.User;
 import Production.AuthService.exceptions.CustomAccessDeniedHandler;
 import Production.AuthService.exceptions.CustomAuthenticationEntryPoint;
 import Production.AuthService.oauth.OAuth2FailureHandler;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
+import Production.AuthService.oauth.OAuth2SuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import tools.jackson.databind.ObjectMapper;
-import Production.AuthService.oauth.OAuth2SuccessHandler;
-import java.time.Instant;
-import java.util.Map;
 
 @Configuration
 @EnableWebSecurity
@@ -58,37 +47,32 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .sessionManagement(sm ->
-                        sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS) /// IMPORTANT
+                        sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS) //by defualt statefull  ...
                 )
                 .authorizeHttpRequests(auth -> auth
-                        // Public URLs
-                        .requestMatchers(PublicURLs.ALL_PUBLIC_URL).permitAll()
 
-                        // 1️⃣ CREATE → only DEVELOPER
-                        .requestMatchers(HttpMethod.POST, "/api/v3/user/**","/api/v3/auth/refresh")
-                        .hasRole("DEVELOPER")
-
-                        // 2️⃣ GET ALL → only ADMIN & DEVELOPER
-                        .requestMatchers(HttpMethod.GET, "/api/v3/user/**")
-                        .hasAnyRole("ADMIN", "DEVELOPER")
-
-
-                        // Everything else must be authenticated
-                        .anyRequest().authenticated()
+//                        .requestMatchers(PublicURLs.ALL_PUBLIC_URL).permitAll()
+//                        .requestMatchers(HttpMethod.POST, "/api/v3/user/**","/api/v3/auth/refresh")
+//                        .hasRole("DEVELOPER")
+//                        .requestMatchers(HttpMethod.GET, "/api/v3/user/**")
+//                        .hasAnyRole("ADMIN", "DEVELOPER")
+                                .requestMatchers("/api/v1/auth/**").permitAll()
+                                .anyRequest().authenticated()
                 )
-                .oauth2Login(oauth -> oauth
-                        .successHandler(oAuth2SuccessHandler)
-                        .failureHandler(oAuth2FailureHandler)
-                )
-
-                .logout(AbstractHttpConfigurer::disable)
-                .headers(headers ->
-                        headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
-                )
-                .exceptionHandling(ex ->
-                        ex.authenticationEntryPoint(customAuthenticationEntryPoint)
-                         .accessDeniedHandler(customAccessDeniedHandler)
-                )
+//                .oauth2Login(oauth -> oauth
+//                        .successHandler(oAuth2SuccessHandler)
+//                        .failureHandler(oAuth2FailureHandler)
+//                )
+//
+//                .logout(AbstractHttpConfigurer::disable)
+//                .headers(headers ->
+//                        headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
+//                )
+//                .exceptionHandling(ex ->
+//                        ex.authenticationEntryPoint(customAuthenticationEntryPoint)
+//                         .accessDeniedHandler(customAccessDeniedHandler)
+//                )
+                .authenticationProvider(authenticationProvider())
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .addFilterBefore(
                         jwtauthenticationFilter,
@@ -104,11 +88,24 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    //    @Bean
+//    public AuthenticationManager authenticationManager(
+//            AuthenticationConfiguration authenticationConfiguration
+//    ) throws Exception {
+//        return authenticationConfiguration.getAuthenticationManager();
+//    }
     @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration authenticationConfiguration
-    ) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
+            throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
     }
 
 

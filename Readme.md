@@ -63,6 +63,40 @@ Google / GitHub (OAuth Provider)
 
 ---
 
+## /login ==> JWT
+
+```shell
+1. SecurityConfig          — stateless, permit /auth/**, filter chain
+2. JwtService              — generate / validate / extract claims
+3. JwtAuthFilter           — OncePerRequestFilter, reads Bearer token
+4. UserDetailsServiceImpl  — loadUserByUsername via email
+5. AuthService             — authenticate, persist refresh, generate tokens
+6. AuthController          — POST /api/v1/auth/login
+```
+
+#### sequence
+
+```shell
+Client → POST /login (email, password)
+  → AuthController
+    → AuthService.login()
+      → AuthenticationManager.authenticate()         [1. verify credentials]
+        → UserDetailsServiceImpl.loadUserByUsername() [2. load from DB]
+      → RefreshTokenRepository.save()                [3. persist jti to DB]
+      → JwtService.generateAccessToken()             [4. sign access JWT]
+      → JwtService.generateRefreshToken(jti)         [5. sign refresh JWT]
+      → CookieService.attachRefreshTokenCookie()     [6. HttpOnly cookie]
+  ← LoginResponse(accessToken, expiresIn, "Bearer")
+
+Every subsequent request:
+Client → GET /any (Authorization: Bearer <token>)
+  → JwtAuthFilter
+    → JwtService.extractEmail()
+    → UserDetailsServiceImpl.loadUserByUsername()
+    → SecurityContextHolder.setAuthentication()
+  → Controller (authenticated)
+```
+
 # 🔁 OAuth Flow (Backend Only)
 
 1. User clicks **Login with Google/GitHub**

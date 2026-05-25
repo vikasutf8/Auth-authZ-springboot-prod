@@ -1,13 +1,11 @@
 package Production.AuthService.SecurityUtils;
 
 
-import Production.AuthService.entities.Role;
 import Production.AuthService.entities.User;
-import Production.AuthService.exceptions.InvalidResourceFoundException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,11 +14,7 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 
 @Getter
@@ -48,132 +42,192 @@ public class JwtService {
         this.issuer = issuer;
     }
 
+    private SecretKey signingKey() {
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode("flajksdfhaksjdfh"));
+    }
+// ── Generate ──────────────────────────────────────────────
 
-    //generate token -:generateAccessToken(User user)
-    /*
-    {
-  "iss": "api.substring.com",
-  "sub": "admin@example.com",
-  "uid": "a2be2538-2696-49d9-b334-2a9348efa93e",
-  "roles": ["ROLE_ADMIN", "ROLE_USER"],
-  "iat": 1707316220,
-  "exp": 1707319820
-}
-
-     */
     public String generateAccessToken(User user) {
-
-        Instant now = Instant.now();
-        Instant expiry = now.plusSeconds(accessTTL);
-
-        List<String> roles = user.getRoles()
-                .stream()
-                .map(role -> "ROLE_" + role.getName())
-                .toList();
-
         return Jwts.builder()
-                .issuer(issuer)
-                .id(UUID.randomUUID().toString())
-                .subject(user.getId().toString())     // primary identity
-                .claim("email", user.getEmail())
-                .claim("roles", roles)
-                .claim("tpe","access")
-                .issuedAt(Date.from(now))
-                .expiration(Date.from(expiry))
-                .signWith(key, SignatureAlgorithm.HS256)
+                .subject(user.getEmail())
+                .claim("roles", user.getRoles())
+                .claim("type", "access")
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + accessTTL * 1000))
+                .signWith(signingKey())
                 .compact();
     }
 
-    //generateRefereshToken
-    public String generateRefreshToken(User user,String jti) {
-
-        Instant now = Instant.now();
-        Instant expiry = now.plusSeconds(refreshTTL);
-
-//        List<String> roles = user.getRoles()
-//                .stream()
-//                .map(Role::getName)   // or role.getRoleName()
-//                .collect(Collectors.toList());
-        List<String> roles = user.getRoles()
-                .stream()
-                .map(role -> "ROLE_" + role.getName())
-                .toList();
-
+    public String generateRefreshToken(User user, String jti) {
         return Jwts.builder()
-                .issuer(issuer)
-                .id(jti)
-                .subject(user.getId().toString())     // primary identity
-                .claim("email", user.getEmail())
-                .claim("roles", roles)
-                .claim("tpe","refresh")
-                .issuedAt(Date.from(now))
-                .expiration(Date.from(expiry))
-                .signWith(key, SignatureAlgorithm.HS256)
+                .subject(user.getEmail())
+                .id(jti)                     // jti links JWT → DB row for revocation
+                .claim("type", "refresh")
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + refreshTTL * 1000))
+                .signWith(signingKey())
                 .compact();
     }
 
-    //parse the token
-    public Claims parseToken(String token) {
-        try {
-            return Jwts.parser()
-                    .verifyWith(key)
-                    .build()
-                    .parseSignedClaims(token)
-                    .getPayload();
-        } catch (JwtException | IllegalArgumentException ex) {
-            throw new InvalidResourceFoundException("Invalid token");
-        }
-    }
-
-
-    //validate token
-    public Claims validateAccessToken(String token) {
-        Claims claims = parseToken(token);
-
-        String type = claims.get("tpe", String.class);
-        if (!"access".equals(type)) {
-            throw new InvalidResourceFoundException("Invalid access-token type");
-        }
-
-        return claims;
-    }
-
-    public Claims validateRefreshToken(String token) {
-        Claims claims = parseToken(token);
-
-        String type = claims.get("tpe", String.class);
-        if (!"refresh".equals(type)) {
-            throw new InvalidResourceFoundException("Invalid refresh-token type");
-        }
-
-        return claims;
-    }
-
-    public UUID extractUserId(String token) {
-        Claims claims = validateAccessToken(token);
-        return UUID.fromString(claims.getSubject());
-    }
-    public UUID extractUserIdFromRefreshToken(String token) {
-        Claims claims = validateRefreshToken(token);
-        return UUID.fromString(claims.getSubject());
-    }
-
-    public String extractRefreshTokenId(String token){
-        Claims claims = validateRefreshToken(token);
-        return  claims.getId();
-    }
+    // ── Extract ───────────────────────────────────────────────
 
     public String extractEmail(String token) {
-        return validateAccessToken(token).get("email", String.class);
+        return parseClaims(token).getSubject();
     }
 
-//    public List<String> extractRoles(String token) {
-//        return validateAccessToken(token).get("roles", List.class);
+    public String extractJti(String token) {
+        return parseClaims(token).getId();
+    }
+
+    public boolean isTokenValid(String token) {
+        try {
+            parseClaims(token);          // throws if expired or tampered
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    private Claims parseClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(signingKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
+    public long getAccessTTL() {
+        return accessTTL;
+    }
+
+    public long getRefreshTTL() {
+        return refreshTTL;
+    }
+//    //generate token -:generateAccessToken(User user)
+//    /*
+//    {
+//  "iss": "api.substring.com",
+//  "sub": "admin@example.com",
+//  "uid": "a2be2538-2696-49d9-b334-2a9348efa93e",
+//  "roles": ["ROLE_ADMIN", "ROLE_USER"],
+//  "iat": 1707316220,
+//  "exp": 1707319820
+//}
+//
+//     */
+//    public String generateAccessToken(User user) {
+//
+//        Instant now = Instant.now();
+//        Instant expiry = now.plusSeconds(accessTTL);
+//
+//        List<String> roles = user.getRoles()
+//                .stream()
+//                .map(role -> "ROLE_" + role.getName())
+//                .toList();
+//
+//        return Jwts.builder()
+//                .issuer(issuer)
+//                .id(UUID.randomUUID().toString())
+//                .subject(user.getId().toString())     // primary identity
+//                .claim("email", user.getEmail())
+//                .claim("roles", roles)
+//                .claim("tpe","access")
+//                .issuedAt(Date.from(now))
+//                .expiration(Date.from(expiry))
+//                .signWith(key, SignatureAlgorithm.HS256)
+//                .compact();
 //    }
-    public List extractRoles(String token) {
-        return validateAccessToken(token).get("roles", List.class)
-                .stream()
-                .map(Object::toString)
-                .toList();
-}
+//
+//    //generateRefereshToken
+//    public String generateRefreshToken(User user,String jti) {
+//
+//        Instant now = Instant.now();
+//        Instant expiry = now.plusSeconds(refreshTTL);
+//
+////        List<String> roles = user.getRoles()
+////                .stream()
+////                .map(Role::getName)   // or role.getRoleName()
+////                .collect(Collectors.toList());
+//        List<String> roles = user.getRoles()
+//                .stream()
+//                .map(role -> "ROLE_" + role.getName())
+//                .toList();
+//
+//        return Jwts.builder()
+//                .issuer(issuer)
+//                .id(jti)
+//                .subject(user.getId().toString())     // primary identity
+//                .claim("email", user.getEmail())
+//                .claim("roles", roles)
+//                .claim("tpe","refresh")
+//                .issuedAt(Date.from(now))
+//                .expiration(Date.from(expiry))
+//                .signWith(key, SignatureAlgorithm.HS256)
+//                .compact();
+//    }
+//
+//    //parse the token
+//    public Claims parseToken(String token) {
+//        try {
+//            return Jwts.parser()
+//                    .verifyWith(key)
+//                    .build()
+//                    .parseSignedClaims(token)
+//                    .getPayload();
+//        } catch (JwtException | IllegalArgumentException ex) {
+//            throw new InvalidResourceFoundException("Invalid token");
+//        }
+//    }
+//
+//
+//    //validate token
+//    public Claims validateAccessToken(String token) {
+//        Claims claims = parseToken(token);
+//
+//        String type = claims.get("tpe", String.class);
+//        if (!"access".equals(type)) {
+//            throw new InvalidResourceFoundException("Invalid access-token type");
+//        }
+//
+//        return claims;
+//    }
+//
+//    public Claims validateRefreshToken(String token) {
+//        Claims claims = parseToken(token);
+//
+//        String type = claims.get("tpe", String.class);
+//        if (!"refresh".equals(type)) {
+//            throw new InvalidResourceFoundException("Invalid refresh-token type");
+//        }
+//
+//        return claims;
+//    }
+//
+//    public UUID extractUserId(String token) {
+//        Claims claims = validateAccessToken(token);
+//        return UUID.fromString(claims.getSubject());
+//    }
+//    public UUID extractUserIdFromRefreshToken(String token) {
+//        Claims claims = validateRefreshToken(token);
+//        return UUID.fromString(claims.getSubject());
+//    }
+//
+//    public String extractRefreshTokenId(String token){
+//        Claims claims = validateRefreshToken(token);
+//        return  claims.getId();
+//    }
+//
+//    public String extractEmail(String token) {
+//        return validateAccessToken(token).get("email", String.class);
+//    }
+//
+////    public List<String> extractRoles(String token) {
+////        return validateAccessToken(token).get("roles", List.class);
+////    }
+//    public List extractRoles(String token) {
+//        return validateAccessToken(token).get("roles", List.class)
+//                .stream()
+//                .map(Object::toString)
+//                .toList();
+//}
 }
