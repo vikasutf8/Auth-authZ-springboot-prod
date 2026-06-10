@@ -52,6 +52,7 @@ public class AuthController {
     private final JwtService jwtService;
     private final ModelMapper modelMapper;
     private final CookieService cookieService;
+    private final Production.AuthService.services.LdapAuthService ldapAuthService;
     @Operation(summary = "Login user")
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> loginUser(@Valid @RequestBody LoginRequestDto loginRequestDto, HttpServletResponse response) {
@@ -107,6 +108,13 @@ public class AuthController {
 //                bearer(accessToken,refreshToken, jwtService.getAccessTTL(),"refresh",modelMapper.map(user,UserResponseDto.class));
 //
 //        return  ResponseEntity.ok(tokenResponseDto);
+    }
+
+    @PostMapping("/ldap-login")
+    public ResponseEntity<TokenResponseDto> loginWithLdap(@Valid @RequestBody Production.AuthService.dtos.Request.LdapLoginRequest ldapRequest,
+                                                          HttpServletResponse response) {
+        TokenResponseDto token = ldapAuthService.loginWithLdap(ldapRequest, response);
+        return ResponseEntity.ok(token);
     }
 
 //    private Authentication authenticate(@Valid LoginRequestDto loginRequestDto) {
