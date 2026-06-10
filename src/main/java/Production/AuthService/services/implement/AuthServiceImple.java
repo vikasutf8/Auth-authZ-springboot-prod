@@ -2,7 +2,7 @@ package Production.AuthService.services.implement;
 
 import Production.AuthService.SecurityUtils.CookieService;
 import Production.AuthService.SecurityUtils.JwtService;
-import Production.AuthService.dtos.Request.LoginRequest;
+import Production.AuthService.dtos.LoginRequestDto;
 import Production.AuthService.dtos.Request.RegisterRequest;
 import Production.AuthService.dtos.Response.LoginResponse;
 import Production.AuthService.dtos.Response.RegisterResponse;
@@ -77,7 +77,8 @@ public class AuthServiceImple implements AuthService {
     }
 
     @Override
-    public LoginResponse loginUser(LoginRequest loginRequestDto, HttpServletResponse response) {
+    public LoginResponse loginUser(LoginRequestDto loginRequestDto, HttpServletResponse response) {
+        //1. send here...its want to security fitler chain
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequestDto.email(),

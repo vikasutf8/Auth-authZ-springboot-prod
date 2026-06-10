@@ -117,7 +117,7 @@ public class userServiceImple implements UserService {
                 ));
         user.setName(userRequestDto.getName());
         user.setImageUri(userRequestDto.getImageUri());
-        user.setEnable(userRequestDto.isEnable());
+        user.setEnabled(userRequestDto.isEnable());
 //        user.setProvider(userRequestDto.getProvider());
 
         // roles – optional (only if provided)
